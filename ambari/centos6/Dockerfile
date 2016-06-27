@@ -5,7 +5,7 @@ arg repo=http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.2.2.0
 volume /build
 
 run yum update -y
-run yum install -y wget
+run yum install -y wget openssh-clients
 run wget $repo -O /etc/yum.repos.d/ambari.repo
 run yum clean all
 
