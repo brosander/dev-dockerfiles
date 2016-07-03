@@ -6,13 +6,15 @@ arg gid
 run groupadd -g $gid nifi || groupmod -n nifi `getent group $gid | cut -d: -f1`
 run useradd --shell /bin/bash -u $uid -g $gid -m nifi
 
-volume /opt/nifi
+run mkdir -p /opt/nifi
+run chown -R nifi:nifi /opt/nifi
 
 add start.sh /home/nifi/
-run chown nifi:nifi /home/nifi/start.sh
-run chmod +x /home/nifi/start.sh
+run chown -R nifi:nifi /home/nifi
 
 user nifi
+
+run chmod +x /home/nifi/start.sh
 
 expose 8080
 
