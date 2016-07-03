@@ -34,6 +34,8 @@ killAndRemoveContainer() {
 if [ -z "$1" ]; then
   echo "Expected mpack directory to be specified as first arg (can be an empty dir if necessary)"
   exit 1
+else
+  echo "Mpack directory: $1"
 fi
 
 if [ -z "$2" ]; then
@@ -71,7 +73,7 @@ fi
 killAndRemoveContainer ambari
 
 echo "Creating ambari container"
-exitOnFail docker run -d --name ambari --hostname ambari --net ambari -v "$1":/build -e YUM_PROXY=http://squid:3128 ambari
+exitOnFail docker run -d --name ambari --hostname ambari --net ambari -v "$1:/build" -e YUM_PROXY=http://squid:3128 ambari
 
 for i in `docker ps | awk '{print $NF}' | grep "^centos6"`; do
   echo "Killing container $i"
@@ -86,13 +88,6 @@ done
 if [ -z "$3" ]; then
   echo "Expected number of target nodes as third arg, defaulting to 1"
   NUM_TARGETS="1"
-  docker run -d --net ambari --name centos61 --hostname centos61 -e YUM_PROXY=http://squid:3128 centos6-ssh "$PUB_KEY"
-  if [ $? -ne 0 ]; then
-    echo "Failed to create only target node"
-    exit 1
-  else 
-    echo "Target node with hostname centos61 created"
-  fi
 else
   echo "Creating $3 target nodes"
   NUM_TARGETS="$3"
