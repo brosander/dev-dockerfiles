@@ -15,4 +15,9 @@ else
   exit 1
 fi
 
-/opt/nifi/bin/nifi.sh run
+cd /opt/nifi-conf
+cp * /opt/nifi/conf/
+
+cd /opt/nifi
+/opt/nifi/bin/nifi.sh start
+tail -f /opt/nifi/logs/*

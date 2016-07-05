@@ -9,6 +9,12 @@ run useradd --shell /bin/bash -u $uid -g $gid -m nifi
 run mkdir -p /opt/nifi
 run chown -R nifi:nifi /opt/nifi
 
+run mkdir -p /opt/nifi-archive
+run chown -R nifi:nifi /opt/nifi-archive
+
+run mkdir -p /opt/nifi-conf
+run chown -R nifi:nifi /opt/nifi-conf
+
 add start.sh /home/nifi/
 run chown -R nifi:nifi /home/nifi
 
