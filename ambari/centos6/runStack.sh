@@ -47,7 +47,7 @@ PUB_KEY="`cat \"$2\"`"
 
 if [ -z "`docker network ls | awk '{print $2}' | grep '^ambari$'`" ]; then
   echo "Creating ambari network"
-  exitOnFail docker network create --gateway 172.17.1.1 --subnet 172.17.1.0/24 ambari
+  exitOnFail docker network create --gateway 172.18.1.1 --subnet 172.18.1.0/24 ambari
 else
   echo "Ambari network already exists, not creating"
 fi
@@ -73,15 +73,13 @@ fi
 killAndRemoveContainer ambari
 
 echo "Creating ambari container"
-exitOnFail docker run -d --name ambari --hostname ambari --net ambari -v "$1:/build" -e YUM_PROXY=http://squid:3128 ambari
+exitOnFail docker run -d --name ambari --hostname ambari --net ambari -v "$1:/build" -p 8080:8080 -e YUM_PROXY=http://squid:3128 ambari
 
 for i in `docker ps | awk '{print $NF}' | grep "^centos6"`; do
-  echo "Killing container $i"
   killContainer "$i"
 done
 
 for i in `docker ps -a | awk '{print $NF}' | grep "^centos6"`; do
-  echo "Removing container $i"
   rmContainer "$i"
 done
 
