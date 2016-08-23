@@ -6,7 +6,8 @@ arg ambari_user=root
 volume /build
 
 run yum update -y
-run yum install -y wget openssh-clients
+run yum install -y wget openssh-clients krb5-workstation
+run cp /etc/krb5.conf /etc/krb5.conf.original
 run wget $repo -O /etc/yum.repos.d/ambari.repo
 run yum clean all
 

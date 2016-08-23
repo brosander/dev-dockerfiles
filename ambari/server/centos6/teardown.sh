@@ -32,6 +32,7 @@ killAndRemoveContainer() {
 }
 
 killAndRemoveContainer ambari-ssh-gateway
+killAndRemoveContainer kdc
 killAndRemoveContainer ambari
 
 for i in `docker ps | awk '{print $NF}' | grep "^centos6"`; do
