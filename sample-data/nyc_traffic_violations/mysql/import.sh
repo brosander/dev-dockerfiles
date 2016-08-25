@@ -21,12 +21,3 @@ mysql -u root --password="$MYSQL_ROOT_PASSWORD" -D "$MYSQL_DATABASE" << EOS
     ; SHOW WARNINGS;
   commit;
 EOS
-
-#mysqlimport \
-#  --fields-terminated-by=, \
-#  --local -u root \
-#  --columns='Plate,State,License_Type,Summons_Number,Issue_Date,Violation_Time,Violation,Judgment_Entry_Date,Fine_Amount,Penalty_Amount,Interest_Amount,Reduction_Amount,Payment_Amount,Amount_Due,Precinct,County,Issuing_Agency,Violation_Status,Summons_Image' \
-#  --local \
-#  --password="$MYSQL_ROOT_PASSWORD" \
-#  "$MYSQL_DATABASE" \
-#  /tmp/violations
