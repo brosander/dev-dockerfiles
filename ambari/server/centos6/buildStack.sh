@@ -18,4 +18,6 @@ if [ -z "$1" ]; then
   docker build -t non-root-ambari-agent .
 else
   docker build --build-arg repo="$1" -t non-root-ambari-agent .
-fi
+fi && \
+cd "$BUILD_DIR/../../ranger/non-root/centos6/" && docker build -t non-root-ranger . && \
+cd "$BUILD_DIR/../../solr/ubuntu/" && docker build -t ranger-solr .

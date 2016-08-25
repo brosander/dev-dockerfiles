@@ -31,7 +31,9 @@ killAndRemoveContainer() {
   rmContainer "$1"
 }
 
-killAndRemoveContainer ambari-ssh-gateway
+killAndRemoveContainer gateway
+killAndRemoveContainer non-root-ranger
+killAndRemoveContainer ranger-solr
 killAndRemoveContainer kdc
 killAndRemoveContainer ambari
 
