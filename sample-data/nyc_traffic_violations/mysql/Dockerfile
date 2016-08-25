@@ -1,4 +1,4 @@
-from postgres
+from mysql
 
 run apt-get update && apt-get install -y curl
 
