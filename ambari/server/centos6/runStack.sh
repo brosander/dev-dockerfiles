@@ -129,32 +129,32 @@ if [ -n "`docker ps  | awk '{print $NF}' | grep '^squid$'`" ]; then
   echo "Squid already running, not starting again"
 else
   rmContainer squid
-  exitOnFail docker run -d --hostname squid.ambari --name squid --net ambari -m 512M --memory-reservation 256M squid
+  exitOnFail docker run -d --hostname squid.ambari --name squid --net ambari squid
 fi
 
 killAndRemoveContainer kdc
 if [ "$KERBEROS" == "yes" ]; then
   echo "Creating kdc container"
-  exitOnFail docker run -d --hostname kdc.ambari --name kdc --net ambari -m 256M --memory-reservation 128M -v /dev/urandom:/dev/random kdc
+  exitOnFail docker run -d --hostname kdc.ambari --name kdc --net ambari -v /dev/urandom:/dev/random kdc
 fi
 
 killAndRemoveContainer gateway
 if [ "$GATEWAY" == "yes" ]; then
   echo "Creating gateway container"
-  exitOnFail docker run -d --name gateway --hostname gateway.ambari --net ambari -m 1G --memory-reservation 512M -p "$LOCAL_SSH":22 gateway -p "$PUB_KEY"
+  exitOnFail docker run -d --name gateway --hostname gateway.ambari --net ambari -p "$LOCAL_SSH":22 gateway -p "$PUB_KEY"
 fi
 
 killAndRemoveContainer non-root-ranger
 killAndRemoveContainer ranger-solr
 if [ "$RANGER" == "yes" ]; then
   echo "Creating ranger container"
-  exitOnFail docker run -d --name non-root-ranger --hostname ranger.ambari --net ambari -m 512M --memory-reservation 256M -e YUM_PROXY=http://squid:3128 non-root-ranger "$PUB_KEY" ambari
-  exitOnFail docker run -d --name ranger-solr --hostname solr.ambari --net ambari -m 512M --memory-reservation 256M ranger-solr
+  exitOnFail docker run -d --name non-root-ranger --hostname ranger.ambari --net ambari -e YUM_PROXY=http://squid:3128 non-root-ranger "$PUB_KEY" ambari
+  exitOnFail docker run -d --name ranger-solr --hostname solr.ambari --net ambari ranger-solr
 fi
 
 killAndRemoveContainer ambari
 echo "Creating ambari container"
-exitOnFail docker run -d --hostname ambari.ambari --name ambari --net ambari -v "$MPACK_DIR:/build" -p 8080:8080 -e YUM_PROXY=http://squid:3128 -m 1G --memory-reservation 512M ambari
+exitOnFail docker run -d --hostname ambari.ambari --name ambari --net ambari -v "$MPACK_DIR:/build" -p 8080:8080 -e YUM_PROXY=http://squid:3128 ambari
 
 for i in `docker ps | awk '{print $NF}' | grep "^centos6"`; do
   killContainer "$i"
@@ -166,9 +166,9 @@ done
 
 for i in $(seq 1 $NUM_TARGETS); do
   if [ "$NON_ROOT_AGENT" == "yes" ]; then
-    exitOnFail docker run -d --net ambari --hostname "centos6$i.ambari" --name "centos6$i" -e YUM_PROXY=http://squid:3128 -m 2G --memory-reservation 1536M non-root-ambari-agent "$PUB_KEY" ambari
+    exitOnFail docker run -d --net ambari --hostname "centos6$i.ambari" --name "centos6$i" -e YUM_PROXY=http://squid:3128 non-root-ambari-agent "$PUB_KEY" ambari
   else
-    exitOnFail docker run -d --net ambari --hostname "centos6$i.ambari" --name "centos6$i" -e YUM_PROXY=http://squid:3128 -m 2G --memory-reservation 1536M root-ambari-agent "$PUB_KEY" ambari
+    exitOnFail docker run -d --net ambari --hostname "centos6$i.ambari" --name "centos6$i" -e YUM_PROXY=http://squid:3128 root-ambari-agent "$PUB_KEY" ambari
   fi
   echo "Target node with hostname centos6$i created"
 done
