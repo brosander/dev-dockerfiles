@@ -21,4 +21,4 @@ run chmod +x /home/nifi/start.sh
 
 expose 8080
 
-cmd ["/home/nifi/start.sh"]
+entrypoint ["/home/nifi/start.sh"]

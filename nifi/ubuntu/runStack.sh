@@ -4,12 +4,14 @@ NUM_TARGETS="1"
 LOCAL_SSH="2001"
 GATEWAY="no"
 NIFI=""
+CONFIG_DIR=""
 
 printUsageAndExit() {
   echo "usage: $0 -p pub_key_file [-n num_target_nodes] [-l LOCAL_SSH_PORT] [-g] [-h]"
   echo "       -h or --help                    print this message and exit"
   echo "       -p or --pubkey                  public key to use (required)"
   echo "       -a or --archive                 nifi archive to use (required)"
+  echo "       -c or --configDirectory         nifi configuration parent directory"
   echo "       -n or --numNodes                number of nifi nodes (default: $NUM_TARGETS)"
   echo "       -l or --localSsh                local port to forward to ssh gateway (default: $LOCAL_SSH)"
   echo "       -g or --gateway                 start gateway container"
@@ -26,6 +28,10 @@ while [[ $# -ge 1 ]]; do
     ;;
     -a|--archive)
     NIFI="$2"
+    shift
+    ;;
+    -c|--configDirectory)
+    CONFIG_DIR="$2"
     shift
     ;;
     -n|--numNodes)
@@ -59,6 +65,12 @@ fi
 
 if [ -z "$NIFI" ]; then
   echo "Expected nifi archive to be specified"
+  echo
+  printUsageAndExit
+fi
+
+if [ -z "$CONFIG_DIR" ]; then
+  echo "Expected nifi config dir to be specified"
   echo
   printUsageAndExit
 fi
@@ -112,7 +124,7 @@ fi
 killAndRemoveContainer nifi-gateway
 if [ "$GATEWAY" == "yes" ]; then
   echo "Creating gateway container"
-  exitOnFail docker run -d --name nifi-gateway --hostname gateway.nifi --net nifi -p "$LOCAL_SSH":22 ubuntu-openssh-server -p "$PUB_KEY"
+  exitOnFail docker run -d --name nifi-gateway --hostname gateway.nifi --net nifi -p "$LOCAL_SSH":22 ubuntu-openssh-server "$PUB_KEY"
 fi
 
 for i in `docker ps | awk '{print $NF}' | grep "^nifi" | grep -v nifi-gateway`; do
@@ -124,7 +136,7 @@ for i in `docker ps -a | awk '{print $NF}' | grep "^nifi" | grep -v nifi-gateway
 done
 
 for i in $(seq 1 $NUM_TARGETS); do
-  exitOnFail docker run -d --net nifi --hostname "nifi$i.nifi" --name "nifi$i" -v "$NIFI:/opt/nifi-archive/nifi-archive.zip" nifi
+  exitOnFail docker run -d --net nifi --hostname "nifi$i.nifi" --name "nifi$i" -v "$NIFI:/opt/nifi-archive/nifi-archive.zip" -v "$CONFIG_DIR/nifi$i.nifi:/opt/nifi-conf" nifi "$i" "$NUM_TARGETS"
   echo "Target node with hostname nifi$i created"
 done
 
