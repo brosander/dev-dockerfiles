@@ -16,7 +16,7 @@ else
 fi
 
 cd /opt/nifi-conf
-cp * /opt/nifi/conf/
+cp -r * /opt/nifi/conf/
 
 if [ -n "$1" ]; then
   if [ -z "$2" ]; then
