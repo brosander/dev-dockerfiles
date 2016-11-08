@@ -55,6 +55,8 @@ if [ -n "$YUM_PROXY" ]; then
   echo "proxy=$YUM_PROXY" >> /etc/yum.conf
 fi
 
-find /build/ -name '*.tar.gz' -exec ambari-server install-mpack --mpack={} --purge --verbose \;
+ambari-server start
+ambari-server stop
+find /build/ -name '*.tar.gz' -exec bash -c 'echo yes | ambari-server install-mpack --mpack=$0 --purge --verbose' {} \;
 ambari-server start
 tail -f /var/log/ambari-server/ambari-server.log
