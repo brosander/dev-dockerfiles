@@ -44,6 +44,16 @@ echo "KDC_HOST: $KDC_HOST"
 echo "REALM:     $REALM"
 echo "DOMAIN:    $DOMAIN"
 
+# save vars for later sourcing if container is getting restarted
+varsFile="scriptVars"
+if [ ! -e "$varsFile" ] ; then
+  echo "KDC_HOST=$KDC_HOST" >> $varsFile
+  echo "REALM=$REALM" >> $varsFile
+  echo "DOMAIN=$DOMAIN" >> $varsFile
+else
+  source $varsFile
+fi
+
 cp /etc/krb5.conf.original /etc/krb5.conf
 sed -i "s/kerberos\.example\.com/$KDC_HOST/g" /etc/krb5.conf
 sed -i "s/EXAMPLE\.COM/$REALM/g" /etc/krb5.conf
@@ -57,6 +67,12 @@ fi
 
 ambari-server start
 ambari-server stop
-find /build/ -name '*.tar.gz' -exec bash -c 'echo yes | ambari-server install-mpack --mpack=$0 --purge --verbose' {} \;
+startedFile="container-was-started"
+if [ ! -e "$startedFile" ] ; then
+  find /build/ -name '*.tar.gz' -exec bash -c 'echo yes | ambari-server install-mpack --mpack=$0 --purge --verbose' {} \;
+fi
 ambari-server start
+if [ ! -e "$startedFile" ] ; then
+  touch $startedFile
+fi
 tail -f /var/log/ambari-server/ambari-server.log

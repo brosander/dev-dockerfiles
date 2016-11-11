@@ -51,6 +51,17 @@ echo "REALM:     $REALM"
 echo "DOMAIN:    $DOMAIN"
 echo "PUB_KEY:    $PUB_KEY"
 
+# save vars for later sourcing if container is getting restarted
+varsFile="scriptVars"
+if [ ! -e "$varsFile" ] ; then
+  echo "KDC_HOST=$KDC_HOST" >> $varsFile
+  echo "REALM=$REALM" >> $varsFile
+  echo "DOMAIN=$DOMAIN" >> $varsFile
+  echo "PUB_KEY=$PUB_KEY" >> $varsFile
+else
+  source $varsFile
+fi
+
 if [ -z "$PUB_KEY" ]; then
   echo "Expected ssh public key to be specified"
   echo
