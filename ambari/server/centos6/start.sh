@@ -40,39 +40,30 @@ while [[ $# -ge 1 ]]; do
   shift
 done
 
-echo "KDC_HOST: $KDC_HOST"
-echo "REALM:     $REALM"
-echo "DOMAIN:    $DOMAIN"
-
-# save vars for later sourcing if container is getting restarted
-varsFile="scriptVars"
-if [ ! -e "$varsFile" ] ; then
-  echo "KDC_HOST=$KDC_HOST" >> $varsFile
-  echo "REALM=$REALM" >> $varsFile
-  echo "DOMAIN=$DOMAIN" >> $varsFile
+if [ -e "/root/started_once" ]; then
+  echo "$0 skipping init logic as it has been run before"
 else
-  source $varsFile
-fi
+  echo "KDC_HOST=$KDC_HOST" >> /root/kerb_info
+  echo "REALM=$REALM" >> /root/kerb_info
+  echo "DOMAIN=$DOMAIN" >> /root/kerb_info
 
-cp /etc/krb5.conf.original /etc/krb5.conf
-sed -i "s/kerberos\.example\.com/$KDC_HOST/g" /etc/krb5.conf
-sed -i "s/EXAMPLE\.COM/$REALM/g" /etc/krb5.conf
-sed -i "s/example\.com/$DOMAIN/g" /etc/krb5.conf
-cp -f /etc/krb5.conf /var/lib/ambari-server/resources/scripts/krb5.conf
+  cp /etc/krb5.conf.original /etc/krb5.conf
+  sed -i "s/kerberos\.example\.com/$KDC_HOST/g" /etc/krb5.conf
+  sed -i "s/EXAMPLE\.COM/$REALM/g" /etc/krb5.conf
+  sed -i "s/example\.com/$DOMAIN/g" /etc/krb5.conf
+  cp -f /etc/krb5.conf /var/lib/ambari-server/resources/scripts/krb5.conf
 
-if [ -n "$YUM_PROXY" ]; then
-  echo "Setting yum proxy to $YUM_PROXY"
-  echo "proxy=$YUM_PROXY" >> /etc/yum.conf
-fi
+  if [ -n "$YUM_PROXY" ]; then
+    echo "Setting yum proxy to $YUM_PROXY"
+    echo "proxy=$YUM_PROXY" >> /etc/yum.conf
+  fi
 
-ambari-server start
-ambari-server stop
-startedFile="container-was-started"
-if [ ! -e "$startedFile" ] ; then
+  ambari-server start
+  ambari-server stop
   find /build/ -name '*.tar.gz' -exec bash -c 'echo yes | ambari-server install-mpack --mpack=$0 --purge --verbose' {} \;
+  touch "/root/started_once"
 fi
+
+source /root/kerb_info
 ambari-server start
-if [ ! -e "$startedFile" ] ; then
-  touch $startedFile
-fi
 tail -f /var/log/ambari-server/ambari-server.log

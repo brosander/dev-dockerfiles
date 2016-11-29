@@ -51,34 +51,28 @@ echo "REALM:     $REALM"
 echo "DOMAIN:    $DOMAIN"
 echo "PUB_KEY:    $PUB_KEY"
 
-# save vars for later sourcing if container is getting restarted
-varsFile="scriptVars"
-if [ ! -e "$varsFile" ] ; then
-  echo "KDC_HOST=$KDC_HOST" >> $varsFile
-  echo "REALM=$REALM" >> $varsFile
-  echo "DOMAIN=$DOMAIN" >> $varsFile
-  echo "PUB_KEY=$PUB_KEY" >> $varsFile
+if [ -e "/root/started_once" ]; then
+  echo "$0 skipping init logic as it has been run before"
 else
-  source $varsFile
+  echo "KDC_HOST=$KDC_HOST" > /root/kerb_info
+  echo "REALM=$REALM" >> /root/kerb_info
+  echo "DOMAIN=$DOMAIN" >> /root/kerb_info
+  echo "PUB_KEY=$PUB_KEY" >> /root/kerb_info
+
+  cp /etc/krb5.conf.original /etc/krb5.conf
+  sed -i "s/kerberos\.example\.com/$KDC_HOST/g" /etc/krb5.conf
+  sed -i "s/EXAMPLE\.COM/$REALM/g" /etc/krb5.conf
+  sed -i "s/example\.com/$DOMAIN/g" /etc/krb5.conf
+
+  if [ -e "/opt/tls-toolkit.tar.gz" ]; then
+    tar -zxvf /opt/tls-toolkit.tar.gz -C /root/
+  fi
+
+  mkdir /home/gateway/.ssh/
+  echo "$PUB_KEY" > /home/gateway/.ssh/authorized_keys
+  chown -R gateway:gateway /home/gateway
 fi
 
-if [ -z "$PUB_KEY" ]; then
-  echo "Expected ssh public key to be specified"
-  echo
-  printUsageAndExit
-fi
-
-cp /etc/krb5.conf.original /etc/krb5.conf
-sed -i "s/kerberos\.example\.com/$KDC_HOST/g" /etc/krb5.conf
-sed -i "s/EXAMPLE\.COM/$REALM/g" /etc/krb5.conf
-sed -i "s/example\.com/$DOMAIN/g" /etc/krb5.conf
-
-if [ -e "/opt/tls-toolkit.tar.gz" ]; then
-  tar -zxvf /opt/tls-toolkit.tar.gz -C /root/
-fi
-
-mkdir /home/gateway/.ssh/
-echo "$PUB_KEY" > /home/gateway/.ssh/authorized_keys
-chown -R gateway:gateway /home/gateway
+source /root/kerb_info
 
 /root/start.sh "$PUB_KEY"
