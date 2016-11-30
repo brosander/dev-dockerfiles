@@ -83,7 +83,13 @@ else
 fi
 
 cd "$(dirname "$(find ./ -name NOTICE | head -n 1)")"
+mkdir build
+cd build
+cmake ..
+echo "Running build from $(pwd)"
 make
-rm -f /out/*
-cp ./assemblies/*.tar.gz /out/
+make package
+make package_source
+rm -f /out/*.tar.gz
+cp *.tar.gz /out/
 echo "Done building, copied output to output directory"
