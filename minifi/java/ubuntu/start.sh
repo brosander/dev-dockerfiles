@@ -14,8 +14,15 @@ else
   echo "Must mount minifi installation at /opt/minifi"
 fi
 
-cd /opt/minifi-conf
-cp * /opt/minifi/conf/
+if [ -e "/opt/minifi-conf" ]; then
+  cd /opt/minifi-conf
+  cp * /opt/minifi/conf/
+fi
+
+if [ -e "/opt/minifi-lib" ]; then
+  cd /opt/minifi-lib
+  cp * /opt/minifi/lib
+fi
 
 cd /opt/minifi
 echo "Running minifi with following config.yml"
