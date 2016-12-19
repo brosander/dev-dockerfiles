@@ -13,7 +13,7 @@ if [ -n "$2" ]; then
   DOCKER_GID="$2"
 fi
 
-TOOLKIT_URL="http://apache.cs.utah.edu/nifi/1.0.0/nifi-toolkit-1.0.0-bin.zip"
+TOOLKIT_URL="http://apache.cs.utah.edu/nifi/1.1.0/nifi-toolkit-1.1.0-bin.zip"
 if [ -n "$3" ]; then
   TOOLKIT_URL="$3"
 fi
